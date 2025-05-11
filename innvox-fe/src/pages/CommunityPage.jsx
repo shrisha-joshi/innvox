@@ -1,88 +1,85 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useChat } from '../context/ChatContext';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useState, useRef } from 'react';
+// import { useChat } from '../context/ChatContext'; // Removed as we are now using raw WebSocket
+// import { useAuth } from '../context/AuthContext'; // Removed as authentication is now handled via JWT in handshake
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const CommunityPage = () => {
-  const [message, setMessage] = useState('');
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [replyingTo, setReplyingTo] = useState(null);
-  const [replyContent, setReplyContent] = useState('');
-  const [socket, setSocket] = useState(null);
-  const fileInputRef = useRef(null);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
-  
-  const { messages, loading, sendMessage, replyToMessage, deleteMessage } = useChat();
-  const { user } = useAuth();
+
+  // Keep loading state for initial data fetch if you implement it later
+  const [loading, setLoading] = useState(false); // Initialize loading state
+
+  let socket;
 
   useEffect(() => {
-    // Initialize WebSocket connection
-    const ws = new WebSocket('ws://localhost:8080');
-    setSocket(ws);
+    // Replace with your backend URL if not running on the same host/port
+    socket = io('http://localhost:5000');
 
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-    };
+    // Assume the JWT is stored in localStorage as 'token'
+    const token = localStorage.getItem('token');
+    socket = io('http://localhost:5000', {
+      query: { token },
+    });
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      // Assuming the server sends a message object with content, username, and timestamp
-      const newMessage = {
-        id: Date.now(),
-        content: data.content,
-        username: data.username,
-        timestamp: data.timestamp,
-        imageUrl: data.imageUrl,
-        replies: []
-      };
-      // Update messages state with the new message
-      sendMessage(newMessage);
-    };
+    socket.on('connect', () => {
+      console.log('Connected to WebSocket server');
+      setError(null); // Clear any previous errors
+    });
+      console.log('Disconnected from WebSocket server');
+    });
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+    socket.on('connect_error', (err) => {
+      console.error('WebSocket connection error:', err);
+      setError('Failed to connect to the community chat. Please try again later.');
+    });
 
-    ws.onclose = () => {
-      console.log('WebSocket disconnected');
+    socket.on('message', (message) => {
+      // Add the new message to the state
+      setMessages((prevMessages) => [...prevMessages, message]);
     };
 
     return () => {
-      ws.close();
+      if (socket) {
+        socket.disconnect();
     };
-  }, []);
+  }, [sendMessage]); // Add sendMessage to dependencies if it's a dependency of the effect
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
+  
   useEffect(() => {
-    scrollToBottom();
+      // Scroll to bottom when messages change
+      scrollToBottom();
   }, [messages]);
 
+  // Removed image handling as it adds complexity and is not directly related to basic WebSocket communication
+  /*
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        //setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
+  */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!message.trim() && !imageFile) return;
+    // Use 'input' state for the message content
+    if (!input.trim()) return;
 
     try {
+        // Send message over WebSocket
+        if (socket) {
       // In a real app, you would upload the image to a server
-      // and get back a URL. For demo, we'll use the base64 string
-      const imageUrl = imagePreview;
-      
       if (replyingTo) {
         await replyToMessage(replyingTo.id, replyContent, imageUrl);
         setReplyingTo(null);
@@ -90,18 +87,23 @@ const CommunityPage = () => {
       } else {
         // Send message over WebSocket
         if (socket && socket.readyState === WebSocket.OPEN) {
-          const messageData = {
-            content: message,
-            username: user.username,
-            timestamp: new Date().toISOString(),
-            imageUrl: imageUrl
+          // Send the message content from the input state
+          const messageToSend = {
+            content: input,
+            // You might want to send user ID instead of username for security and consistency
+            // userId: user ? user.uid : null, 
+            // username: user ? user.username : 'Anonymous', 
+            // timestamp: new Date().toISOString(),
+            // For image uploads, you'd typically send a reference or trigger a separate upload
+            // For now, we'll just send the preview URL if available
+            // imageUrl: imagePreview
           };
-          socket.send(JSON.stringify(messageData));
+          socket.emit('sendMessage', input); // Emit 'sendMessage' event with the input content
         }
-        await sendMessage(message, imageUrl);
+        // If you also want to update local state immediately, you can call sendMessage here
+        // setMessages((prevMessages) => [...prevMessages, { content: input, username: 'You' }]); // Example for local update
       }
-
-      setMessage('');
+    }
       setImageFile(null);
       setImagePreview(null);
     } catch (error) {
@@ -113,10 +115,16 @@ const CommunityPage = () => {
     return new Date(timestamp).toLocaleString();
   };
 
+  // Placeholder for a simplified sendMessage function for local state update (optional)
+  const addMessageToState = (message) => {
+    // This function is now just for updating local state when a message is received
+    setMessages(prevMessages => [...prevMessages, message]);
+  };
+
   return (
     <div className="min-h-screen bg-gray-900 py-20">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto relative"> {/* Added relative for potential positioning */}
           <h1 className="text-4xl font-bold text-white mb-8">Community Hub</h1>
           
           {/* Messages Container */}
@@ -128,37 +136,40 @@ const CommunityPage = () => {
             ) : (
               <div className="space-y-6">
                 {messages.map((msg) => (
-                  <motion.div
-                    key={msg.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-gray-700 rounded-lg p-4"
+                  <div
+                    key={msg.id || Date.now() + Math.random()} // Use a fallback key if no id
+                    className="bg-gray-700 rounded-lg p-4 break-words" // Added break-words
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <span className="font-semibold text-white">{msg.username}</span>
-                        <span className="text-gray-400 text-sm ml-2">{formatDate(msg.timestamp)}</span>
+                        <span className="font-semibold text-white">{msg.username || 'Anonymous'}</span>
+                        {/* Display timestamp if available */}
+                        {msg.timestamp && <span className="text-gray-400 text-sm ml-2">{formatDate(msg.timestamp)}</span>}
                       </div>
-                      {user && user.uid === msg.userId && (
+                      {/* Removed delete button logic as it requires more backend implementation */}
+                      {/* {user && user.uid === msg.userId && (
                         <button
-                          onClick={() => deleteMessage(msg.id)}
+                          onClick={() => deleteMessage(msg.id)} // Implement deleteMessage function
                           className="text-red-400 hover:text-red-300"
                         >
                           Delete
                         </button>
-                      )}
+                      )} */}
                     </div>
                     
                     <p className="text-white mb-2">{msg.content}</p>
                     
+                    {/* Removed image display as image sending was removed */}
+                    {/*
                     {msg.imageUrl && (
                       <img
                         src={msg.imageUrl}
                         alt="Shared content"
-                        className="max-w-full h-auto rounded-lg mb-2"
+                        className="max-w-full h-auto rounded-lg"
                       />
-                    )}
-                    
+                    )} */}
+                    {/* Removed reply and replies logic for simplicity */}
+                    {/*
                     <button
                       onClick={() => setReplyingTo(msg)}
                       className="text-primary hover:text-primary/80 text-sm"
@@ -166,16 +177,10 @@ const CommunityPage = () => {
                       Reply
                     </button>
 
-                    {/* Replies */}
                     {msg.replies.length > 0 && (
                       <div className="mt-4 space-y-4 pl-4 border-l-2 border-gray-600">
                         {msg.replies.map((reply) => (
-                          <motion.div
-                            key={reply.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="bg-gray-600 rounded-lg p-3"
-                          >
+                          <div key={reply.id} className="bg-gray-600 rounded-lg p-3">
                             <div className="flex justify-between items-start mb-2">
                               <div>
                                 <span className="font-semibold text-white">{reply.username}</span>
@@ -190,122 +195,94 @@ const CommunityPage = () => {
                                 className="max-w-full h-auto rounded-lg"
                               />
                             )}
-                          </motion.div>
+                          </div>
                         ))}
                       </div>
-                    )}
-                  </motion.div>
+                    )} */}
+                  </div>
                 ))}
-                <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} /> {/* Empty div to scroll to */}
               </div>
             )}
+            <div ref={messagesEndRef} /> {/* Empty div to scroll to */}
+setMessages((prevMessages) => [...prevMessages, message]);
+        } // Make sure there is no semicolon here
           </div>
 
-          {/* Reply Form */}
-          {replyingTo && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-gray-800 rounded-lg p-4 mb-6"
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-white">Replying to {replyingTo.username}</h3>
-                <button
-                  onClick={() => setReplyingTo(null)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  Cancel
-                </button>
-              </div>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <textarea
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  placeholder="Type your reply..."
-                  className="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
-                  rows="3"
-                />
-                <div className="flex justify-between items-center">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="text-primary hover:text-primary/80"
-                  >
-                    Add Image
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90"
-                  >
-                    Send Reply
-                  </button>
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  className="hidden"
-                />
-              </form>
-            </motion.div>
+          {/* Error Display */}
+          {error && (
+            <div className="bg-red-600 text-white p-4 rounded-lg mb-4">
+              {error}
+            </div>
           )}
 
-          {/* Message Form */}
-          {user ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Share your thoughts with the community..."
-                className="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
-                rows="3"
-              />
-              
-              {imagePreview && (
-                <div className="relative">
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="max-w-full h-auto rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImageFile(null);
-                      setImagePreview(null);
-                    }}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    ×
-                  </button>
-                </div>
-              )}
-              
-              <div className="flex justify-between items-center">
+          {/* Message Input Form */}
+          {/* Simplified form without image upload and reply functionality for basic WebSocket */}
+          {/* {user ? ( */} {/* Re-add user check if needed */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <textarea
+              value={input} // Use the 'input' state
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Share your thoughts with the community..."
+              className="w-full bg-gray-700 text-white rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-primary"
+              rows="3"
+            />
+            
+            {/* Removed image preview and upload button */}
+            {/*
+            {imagePreview && (
+              <div className="relative">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="max-w-full h-auto rounded-lg"
+                />
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-primary hover:text-primary/80"
+                  onClick={() => {
+                    setImageFile(null);
+                    setImagePreview(null);
+                  }}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                 >
-                  Add Image
-                </button>
-                <button
-                  type="submit"
-                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90"
-                >
-                  Send Message
+                  ×
                 </button>
               </div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageChange}
-                accept="image/*"
-                className="hidden"
+            )}
+            */}
+            
+            <div className="flex justify-end items-center"> {/* Align button to the right */}
+              {/* Removed Add Image button */}
+              {/*
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-primary hover:text-primary/80"
+              >
+                Add Image
+              </button>
+              */}
+              <button
+                type="submit"
+                className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90"
+              >
+                Send Message
+              </button>
+            </div>
+            {/* Removed hidden file input */}
+            {/*
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              accept="image/*"
+              className="hidden"
               />
-            </form>
-          ) : (
+            */}
+          </form>
+          {/* ) : ( */} {/* Re-add user check if needed */}
+          {/* Removed sign-in message */}
+          {/*
             <div className="text-center bg-gray-800 rounded-lg p-6">
               <p className="text-white mb-4">Please sign in to participate in the community discussion.</p>
               <Link
@@ -315,7 +292,7 @@ const CommunityPage = () => {
                 Sign In
               </Link>
             </div>
-          )}
+          ) */}
         </div>
       </div>
     </div>

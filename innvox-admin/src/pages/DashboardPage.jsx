@@ -4,13 +4,17 @@ import { useNotification } from '../context/NotificationContext';
 const DashboardPage = () => {
   const { showNotification } = useNotification();
   const [stats, setStats] = useState({
-    totalEvents: 0,
-    activeEvents: 0,
-    totalNotifications: 0,
-    pendingNotifications: 0,
-    totalPlacements: 0,
-    activePlacements: 0
+ totalEvents: 0,
+ activeEvents: 0,
+ totalNotifications: 0,
+ pendingNotifications: 0,
+ totalPlacements: 0,
+ activePlacements: 0,
   });
+
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Simulated data - replace with actual API calls
@@ -22,7 +26,26 @@ const DashboardPage = () => {
       totalPlacements: 10,
       activePlacements: 5
     });
+
+    const fetchItems = async () => {
+      try {
+        const response = await fetch('/api/items');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setItems(data);
+      } catch (error) {
+        setError(error);
+        console.error('Error fetching items:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchItems();
   }, []);
+
 
   const handleRefreshStats = () => {
     showNotification('Statistics refreshed successfully', 'success');

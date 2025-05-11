@@ -1,3 +1,102 @@
+import React, { useEffect, useState } from 'react';
+
+function NotificationsPage() {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [newNotification, setNewNotification] = useState({ recipient: '', message: '' });
+  const [editingNotification, setEditingNotification] = useState(null);
+
+  useEffect(() => {
+    fetchNotifications();40 |        // Add the new message to the state
+41 |        setMessages((prevMessages) => [...prevMessages, message]);
+42 |      } // Remove the semicolon here
+43 |  
+44 |      return () => {
+setMessages((prevMessages) => [...prevMessages, message]);
+    } // No semicolon here
+
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch('/api/notifications');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setNotifications(data);
+    } catch (error) {
+      setError(error);
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setNewNotification({ ...newNotification, [e.target.name]: e.target.value });
+  };
+
+  const handleCreateNotification = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newNotification),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const createdNotification = await response.json();
+      setNotifications([...notifications, createdNotification]);
+      setNewNotification({ recipient: '', message: '' }); // Clear form
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      alert('Failed to create notification.'); // Basic error feedback
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      const response = await fetch(`/api/notifications/${notificationId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      setNotifications(notifications.filter(notification => notification._id !== notificationId));
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+      alert('Failed to delete notification.'); // Basic error feedback
+    }
+  };
+
+  const handleEditClick = (notification) => {
+    setEditingNotification(notification);
+  };
+
+  const handleUpdateNotification = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/notifications/${editingNotification._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingNotification),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }\n\n      const updatedNotification = await response.json();\n      setNotifications(notifications.map(notification => notification._id === updatedNotification._id ? updatedNotification : notification));\n      setEditingNotification(null); // Clear editing state\n    } catch (error) {\n      console.error('Error updating notification:', error);\n      alert('Failed to update notification.'); // Basic error feedback\n    }\n  };\n\n\n  if (loading) {\n    return <div>Loading notifications...</div>;\n  }\n\n  if (error) {\n    return <div>Error loading notifications: {error.message}</div>;\n  }\n\n  return (\n    <div>\n      <h1>Notifications</h1>\n\n      {/* Create New Notification Form */}\n      <h2>Create New Notification</h2>\n      <form onSubmit={handleCreateNotification}>\n        {/* You might want a dropdown or search for recipients */}\n        <input type="text" name="recipient" placeholder="Recipient User ID" value={newNotification.recipient} onChange={handleInputChange} required />\n        <textarea name="message" placeholder="Message" value={newNotification.message} onChange={handleInputChange} required></textarea>\n        <button type="submit">Create Notification</button>\n      </form>\n\n      {/* Notifications List */}\n      <h2>Notifications List</h2>\n      {\n        notifications.length === 0 ? (\n          <p>No notifications found.</p>\n        ) : (\n          <ul>\n            {notifications.map((notification) => (\n              <li key={notification._id}>\n                <p>To: {notification.recipient?.username || notification.recipient}</p>\n                <p>Message: {notification.message}</p>\n                <button onClick={() => handleEditClick(notification)}>Edit</button>\n                <button onClick={() => handleDeleteNotification(notification._id)}>Delete</button>\n              </li>\n            ))}\n          </ul>\n        )\n      }\n\n      {/* Edit Notification Form/Modal (Basic) */}\n      {editingNotification && (\n        <div>\n          <h2>Edit Notification</h2>\n          <form onSubmit={handleUpdateNotification}>\n            {/* You might want a dropdown or search for recipients */}\n            <input type="text" name="recipient" placeholder="Recipient User ID" value={editingNotification.recipient?.username || editingNotification.recipient} onChange={(e) => setEditingNotification({...editingNotification, recipient: e.target.value})} required />\n            <textarea name="message" placeholder="Message" value={editingNotification.message} onChange={(e) => setEditingNotification({...editingNotification, message: e.target.value})} required></textarea>\n            <button type="submit">Update Notification</button>\n            <button onClick={() => setEditingNotification(null)}>Cancel</button>\n          </form>\n        </div>\n      )}\n    </div>\n  );\n}\n\nexport default NotificationsPage;\n
 import React, { useState } from 'react';
 import { useNotification } from '../context/NotificationContext';
 
