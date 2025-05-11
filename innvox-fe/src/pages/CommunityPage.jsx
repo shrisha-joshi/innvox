@@ -10,11 +10,49 @@ const CommunityPage = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [replyingTo, setReplyingTo] = useState(null);
   const [replyContent, setReplyContent] = useState('');
+  const [socket, setSocket] = useState(null);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   
   const { messages, loading, sendMessage, replyToMessage, deleteMessage } = useChat();
   const { user } = useAuth();
+
+  useEffect(() => {
+    // Initialize WebSocket connection
+    const ws = new WebSocket('ws://localhost:8080');
+    setSocket(ws);
+
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      // Assuming the server sends a message object with content, username, and timestamp
+      const newMessage = {
+        id: Date.now(),
+        content: data.content,
+        username: data.username,
+        timestamp: data.timestamp,
+        imageUrl: data.imageUrl,
+        replies: []
+      };
+      // Update messages state with the new message
+      sendMessage(newMessage);
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -50,6 +88,16 @@ const CommunityPage = () => {
         setReplyingTo(null);
         setReplyContent('');
       } else {
+        // Send message over WebSocket
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          const messageData = {
+            content: message,
+            username: user.username,
+            timestamp: new Date().toISOString(),
+            imageUrl: imageUrl
+          };
+          socket.send(JSON.stringify(messageData));
+        }
         await sendMessage(message, imageUrl);
       }
 
