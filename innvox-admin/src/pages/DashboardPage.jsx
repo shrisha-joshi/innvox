@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNotification } from '../context/NotificationContext';
-import PlacementManagement from '../components/PlacementManagement';
 
 const DashboardPage = () => {
   const { showNotification } = useNotification();
@@ -66,9 +65,6 @@ const DashboardPage = () => {
           <p className="text-3xl font-bold mt-2">{stats.activePlacements}</p>
         </div>
       </div>
-
-      {/* Placement Management Section */}
-      <PlacementManagement />
     </div>
   );
 };

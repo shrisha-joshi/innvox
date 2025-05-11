@@ -129,12 +129,6 @@ const Header = () => {
                       Blog
                     </Link>
                     <Link
-                      to="/placements"
-                      className="block px-4 py-2 text-white hover:bg-gray-900 hover:underline hover:text-shadow-glow"
-                    >
-                      Placement Details
-                    </Link>
-                    <Link
                       to="/gallery"
                       className="block px-4 py-2 text-white hover:bg-gray-900 hover:underline hover:text-shadow-glow"
                     >
