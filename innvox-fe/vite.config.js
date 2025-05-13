@@ -1,10 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+<<<<<<< HEAD
 import path from 'path'
+=======
+
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+<<<<<<< HEAD
   server: {
     port: 3000,
     strictPort: true,
@@ -31,4 +36,6 @@ export default defineConfig({
       },
     },
   },
+=======
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
 })

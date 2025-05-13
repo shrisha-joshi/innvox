@@ -13,6 +13,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+<<<<<<< HEAD
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -38,13 +39,26 @@ export const AuthProvider = ({ children }) => {
     };
 
     initializeAuth();
+=======
+
+  useEffect(() => {
+    // Check if user is logged in on mount
+    const storedUser = localStorage.getItem('adminUser');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
   }, []);
 
   const login = async (email, password) => {
     try {
+<<<<<<< HEAD
       setError(null);
       setLoading(true);
 
+=======
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
       // TODO: Replace with actual API call
       // For now, using mock authentication
       if (email === 'admin@innvox.com' && password === 'admin123') {
@@ -60,6 +74,7 @@ export const AuthProvider = ({ children }) => {
       }
       throw new Error('Invalid credentials');
     } catch (error) {
+<<<<<<< HEAD
       setError(error.message);
       return { success: false, error: error.message };
     } finally {
@@ -79,17 +94,30 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
+=======
+      return { success: false, error: error.message };
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('adminUser');
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
   };
 
   const value = {
     user,
     loading,
+<<<<<<< HEAD
     error,
+=======
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
     isAuthenticated: !!user,
     login,
     logout
   };
 
+<<<<<<< HEAD
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -98,6 +126,8 @@ export const AuthProvider = ({ children }) => {
     );
   }
 
+=======
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

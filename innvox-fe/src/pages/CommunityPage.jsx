@@ -2,13 +2,17 @@ import React, { useEffect, useState, useRef } from 'react';
 // import { useChat } from '../context/ChatContext'; // Removed as we are now using raw WebSocket
 // import { useAuth } from '../context/AuthContext'; // Removed as authentication is now handled via JWT in handshake
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
 import { io } from 'socket.io-client';
+=======
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
 
 const CommunityPage = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
+<<<<<<< HEAD
   const [loading, setLoading] = useState(false);
   const socketRef = useRef(null);
 
@@ -30,6 +34,28 @@ const CommunityPage = () => {
     });
 
     socket.on('disconnect', () => {
+=======
+
+  // Keep loading state for initial data fetch if you implement it later
+  const [loading, setLoading] = useState(false); // Initialize loading state
+
+  let socket;
+
+  useEffect(() => {
+    // Replace with your backend URL if not running on the same host/port
+    socket = io('http://localhost:5000');
+
+    // Assume the JWT is stored in localStorage as 'token'
+    const token = localStorage.getItem('token');
+    socket = io('http://localhost:5000', {
+      query: { token },
+    });
+
+    socket.on('connect', () => {
+      console.log('Connected to WebSocket server');
+      setError(null); // Clear any previous errors
+    });
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
       console.log('Disconnected from WebSocket server');
     });
 
@@ -39,22 +65,38 @@ const CommunityPage = () => {
     });
 
     socket.on('message', (message) => {
+<<<<<<< HEAD
       setMessages((prevMessages) => [...prevMessages, message]);
     });
+=======
+      // Add the new message to the state
+      setMessages((prevMessages) => [...prevMessages, message]);
+    };
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
 
     return () => {
       if (socket) {
         socket.disconnect();
+<<<<<<< HEAD
       }
     };
   }, []);
+=======
+    };
+  }, [sendMessage]); // Add sendMessage to dependencies if it's a dependency of the effect
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   
   useEffect(() => {
+<<<<<<< HEAD
     scrollToBottom();
+=======
+      // Scroll to bottom when messages change
+      scrollToBottom();
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
   }, [messages]);
 
   // Removed image handling as it adds complexity and is not directly related to basic WebSocket communication
@@ -74,6 +116,7 @@ const CommunityPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+<<<<<<< HEAD
     if (!input.trim()) return;
 
     try {
@@ -84,6 +127,43 @@ const CommunityPage = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       setError('Failed to send message. Please try again.');
+=======
+    // Use 'input' state for the message content
+    if (!input.trim()) return;
+
+    try {
+        // Send message over WebSocket
+        if (socket) {
+      // In a real app, you would upload the image to a server
+      if (replyingTo) {
+        await replyToMessage(replyingTo.id, replyContent, imageUrl);
+        setReplyingTo(null);
+        setReplyContent('');
+      } else {
+        // Send message over WebSocket
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          // Send the message content from the input state
+          const messageToSend = {
+            content: input,
+            // You might want to send user ID instead of username for security and consistency
+            // userId: user ? user.uid : null, 
+            // username: user ? user.username : 'Anonymous', 
+            // timestamp: new Date().toISOString(),
+            // For image uploads, you'd typically send a reference or trigger a separate upload
+            // For now, we'll just send the preview URL if available
+            // imageUrl: imagePreview
+          };
+          socket.emit('sendMessage', input); // Emit 'sendMessage' event with the input content
+        }
+        // If you also want to update local state immediately, you can call sendMessage here
+        // setMessages((prevMessages) => [...prevMessages, { content: input, username: 'You' }]); // Example for local update
+      }
+    }
+      setImageFile(null);
+      setImagePreview(null);
+    } catch (error) {
+      console.error('Error sending message:', error);
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
     }
   };
 
@@ -113,8 +193,13 @@ const CommunityPage = () => {
               <div className="space-y-6">
                 {messages.map((msg) => (
                   <div
+<<<<<<< HEAD
                     key={msg.id || Date.now() + Math.random()}
                     className="bg-gray-700 rounded-lg p-4 break-words"
+=======
+                    key={msg.id || Date.now() + Math.random()} // Use a fallback key if no id
+                    className="bg-gray-700 rounded-lg p-4 break-words" // Added break-words
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div>
@@ -181,6 +266,11 @@ const CommunityPage = () => {
               </div>
             )}
             <div ref={messagesEndRef} /> {/* Empty div to scroll to */}
+<<<<<<< HEAD
+=======
+setMessages((prevMessages) => [...prevMessages, message]);
+        } // Make sure there is no semicolon here
+>>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
           </div>
 
           {/* Error Display */}
