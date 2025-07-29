@@ -3,9 +3,9 @@ import HeroSection from '../components/home/HeroSection';
 import AboutSection from '../components/home/AboutSection';
 import FeaturesSection from '../components/home/FeaturesSection';
 import CtaSection from '../components/home/CtaSection';
-import CollegeHeader from '../components/layout/CollegeHeader';
+import CollegeHeader from '../components/layout/CollegeHeader.tsx';
 import Header from '../components/layout/Header';
-import NotificationMarquee from '../components/layout/NotificationMarquee';
+import NotificationMarquee from '../components/layout/NotificationMarquee.tsx';
 import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 

@@ -15,7 +15,6 @@ export const NotificationProvider = ({ children }) => {
   const [currentNotification, setCurrentNotification] = useState(null);
 
   useEffect(() => {
-<<<<<<< HEAD
     try {
       const savedNotifications = localStorage.getItem('adminNotifications');
       if (savedNotifications) {
@@ -23,53 +22,10 @@ export const NotificationProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Error loading notifications from localStorage:', error);
-=======
-    // Load notifications from localStorage on initial load
-    const savedNotifications = localStorage.getItem('adminNotifications');
-    if (savedNotifications) {
-      setNotifications(JSON.parse(savedNotifications));
->>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
     }
   }, []);
 
   useEffect(() => {
-<<<<<<< HEAD
-    try {
-      localStorage.setItem('adminNotifications', JSON.stringify(notifications));
-    } catch (error) {
-      console.error('Error saving notifications to localStorage:', error);
-    }
-  }, [notifications]);
-
-  const showNotification = (message, type = 'info') => {
-    try {
-      const newNotification = {
-        id: Date.now(),
-        message,
-        type,
-        timestamp: new Date().toISOString()
-      };
-      setNotifications(prev => [...prev, newNotification]);
-      setCurrentNotification(newNotification);
-
-      // Auto-remove notification after 5 seconds
-      setTimeout(() => {
-        removeNotification(newNotification.id);
-      }, 5000);
-    } catch (error) {
-      console.error('Error showing notification:', error);
-    }
-  };
-
-  const removeNotification = (id) => {
-    try {
-      setNotifications(prev => prev.filter(notification => notification.id !== id));
-      if (currentNotification?.id === id) {
-        setCurrentNotification(null);
-      }
-    } catch (error) {
-      console.error('Error removing notification:', error);
-=======
     // Save notifications to localStorage whenever they change
     localStorage.setItem('adminNotifications', JSON.stringify(notifications));
   }, [notifications]);
@@ -89,22 +45,16 @@ export const NotificationProvider = ({ children }) => {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
     if (currentNotification?.id === id) {
       setCurrentNotification(null);
->>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
     }
   };
 
   const clearNotifications = () => {
-<<<<<<< HEAD
     try {
       setNotifications([]);
       setCurrentNotification(null);
     } catch (error) {
       console.error('Error clearing notifications:', error);
     }
-=======
-    setNotifications([]);
-    setCurrentNotification(null);
->>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
   };
 
   const value = {
@@ -118,7 +68,6 @@ export const NotificationProvider = ({ children }) => {
   return (
     <NotificationContext.Provider value={value}>
       {children}
-<<<<<<< HEAD
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {notifications.map(notification => (
           <div
@@ -143,8 +92,6 @@ export const NotificationProvider = ({ children }) => {
           </div>
         ))}
       </div>
-=======
->>>>>>> 5f9f5a34c5ee9b486d6df436903b2c8c88847a23
     </NotificationContext.Provider>
   );
 }; 
