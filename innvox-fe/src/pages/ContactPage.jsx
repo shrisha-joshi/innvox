@@ -75,7 +75,7 @@ const ContactPage = () => {
             </svg>
           </div>
           <h3 className="text-xl font-medium mb-2">Email</h3>
-          <p className="text-gray-400">innvox_ksit@gmail.com</p>
+          <p className="text-gray-400">innvox@gmail.com</p>
         </div>
         
         <div className="bg-gray-900 p-6 rounded-lg text-center">
@@ -86,7 +86,7 @@ const ContactPage = () => {
             </svg>
           </div>
           <h3 className="text-xl font-medium mb-2">Location</h3>
-          <p className="text-gray-400">KSIT, Bengaluru</p>
+          <p className="text-gray-400">Bengaluru</p>
         </div>
       </div>
     </div>

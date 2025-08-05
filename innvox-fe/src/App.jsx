@@ -12,7 +12,9 @@ import FloatingElements from './components/layout/FloatingElements';
 
 // Pages
 import HomePage from './pages/HomePage';
-// import BlogPage from './pages/BlogPage';
+import BlogPage from './pages/BlogPage';
+import BlogUploadPage from './pages/BlogUploadPage';
+import GalleryPage from './pages/GalleryPage';
 // import SingleBlogPage from './pages/SingleBlogPage';
 import EventsPage from './pages/EventsPage';
 import CommunityPage from './pages/CommunityPage';
@@ -37,8 +39,10 @@ const AppContent = () => {
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          {/* <Route path="/blog" element={<BlogPage />} />
-          <Route path="/blog/:id" element={<SingleBlogPage />} /> */}
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/upload" element={<BlogUploadPage />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+          {/* <Route path="/blog/:id" element={<SingleBlogPage />} /> */}
           <Route path="/events" element={<EventsPage />} />
           <Route path="/team" element={<TeamPage />} />
           <Route path="/community" element={<CommunityPage />} />

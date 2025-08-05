@@ -1,16 +1,63 @@
-import React from 'react';
+import React, { useState } from "react";
+import { FocusCards } from "@/components/ui/focus-cards";
 
-const GalleryPage = () => {
+const initialCards = [
+  {
+    title: "Forest Adventure",
+    src: "https://images.unsplash.com/photo-1518710843675-2540dd79065c?q=80&w=3387&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    title: "Valley of life",
+    src: "https://images.unsplash.com/photo-1600271772470-bd22a42787b3?q=80&w=3072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    title: "Sala behta hi jayega",
+    src: "https://images.unsplash.com/photo-1505142468610-359e7d316be0?q=80&w=3070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    title: "Camping is for pros",
+    src: "https://images.unsplash.com/photo-1486915309851-b0cc1f8a0084?q=80&w=3387&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    title: "The road not taken",
+    src: "https://images.unsplash.com/photo-1507041957456-9c397ce39c97?q=80&w=3456&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    title: "The First Rule",
+    src: "https://assets.aceternity.com/the-first-rule.png",
+  },
+];
+
+export default function GalleryPage() {
+  const [cards, setCards] = useState(initialCards);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const newCards = files.map((file) => ({
+      title: file.name,
+      src: URL.createObjectURL(file),
+    }));
+    setCards((prev) => [...newCards, ...prev]);
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white pt-16">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-8">Gallery</h1>
-        <p className="text-center text-gray-400">
-          Gallery content coming soon...
-        </p>
+    <div className="min-h-screen bg-black py-10">
+      <div className="flex justify-between items-center max-w-5xl mx-auto px-8 mb-8">
+        <h1 className="text-3xl font-bold text-white">Gallery</h1>
+        <label className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition cursor-pointer">
+          Upload Images
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleImageUpload}
+            disabled={uploading}
+          />
+        </label>
       </div>
+      <FocusCards cards={cards} />
     </div>
   );
-};
-
-export default GalleryPage;
+}

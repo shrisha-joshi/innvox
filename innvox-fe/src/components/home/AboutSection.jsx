@@ -98,25 +98,20 @@ const AboutSection = React.memo(() => {
             </h2>
             
             <motion.p variants={textVariants}>
-              Welcome to the Technical Club of K.S. Institute of Technology, where innovation meets opportunity. 
-              We are a community of passionate tech enthusiasts dedicated to fostering technical excellence and 
-              collaborative learning.
+            INNVOX is a student-led technical club focused on innovation, execution, and real-world impact. We bring together passionate developers, designers, and tech enthusiasts to build meaningful projects using modern tools and technologies like web development, AI/ML, IoT, automation, and open-source platforms.
             </motion.p>
             
             <motion.p variants={textVariants}>
-              Our club provides a platform for students to explore, learn, and grow in various technical domains 
-              including Software development, Artificial Intelligence, Web development, Blockchain and more. Through workshops, 
-              hackathons, and collaborative projects, we aim to bridge the gap between academic knowledge and 
-              real-world applications.
+            We operate with a brand-first mindset — learning by doing, collaborating with intent, and building with purpose. INNVOX isn’t just a club; it’s a platform where skills grow, ideas scale, and future-ready creators are shaped.
             </motion.p>
             
             <motion.div
               variants={textVariants}
               className="mt-8"
             >
-              <Link to="/about" className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 inline-block">
+              {/* <Link to="/about" className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg hover:shadow-blue-500/20 transition-all duration-300 inline-block">
                 Learn More About Us
-              </Link>
+              </Link> */}
             </motion.div>
           </motion.div>
           

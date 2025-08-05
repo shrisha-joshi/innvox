@@ -1,71 +1,60 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useBlog } from '../context/BlogContext';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+// Import the hover effect component (to be created)
+import { BlogCardHoverEffect } from "@/components/ui/BlogCardHoverEffect";
 
-const BlogPage = () => {
-  const { posts } = useBlog();
-
-  // Sample blog posts for demonstration
-  const samplePosts = [
+export default function BlogPage() {
+  const [blogs, setBlogs] = useState([
     {
       id: 1,
-      title: 'Getting Started with React',
-      excerpt: 'Learn the basics of React and how to build your first application.',
-      author: 'John Doe',
-      date: 'March 15, 2024',
-      category: 'Web Development',
-      image: '/assets/blog-1.jpg'
+      title: "Modern Web Development",
+      description:
+        "Explore the latest trends and best practices in modern web development, including frameworks, tooling, and deployment strategies.",
+      link: "/blog/modern-web-development",
     },
     {
       id: 2,
-      title: 'Introduction to Machine Learning',
-      excerpt: 'A beginner\'s guide to understanding machine learning concepts.',
-      author: 'Jane Smith',
-      date: 'March 10, 2024',
-      category: 'AI & ML',
-      image: '/assets/blog-2.jpg'
+      title: "Getting Started with Machine Learning",
+      description:
+        "A beginner's guide to machine learning: concepts, tools, and how to build your first ML model using Python and popular libraries.",
+      link: "/blog/machine-learning-intro",
     },
     {
       id: 3,
-      title: 'Cybersecurity Best Practices',
-      excerpt: 'Essential security measures every developer should know.',
-      author: 'Mike Johnson',
-      date: 'March 5, 2024',
-      category: 'Cybersecurity',
-      image: '/assets/blog-3.jpg'
-    }
-  ];
-
-  const displayPosts = posts.length > 0 ? posts : samplePosts;
+      title: "What is an MCP Server?",
+      description:
+        "Understand the architecture and use-cases of MCP (Message Control Protocol) servers in scalable, distributed systems.",
+      link: "/blog/mcp-server-explained",
+    },
+    {
+      id: 4,
+      title: "The Rise of Artificial Intelligence",
+      description:
+        "A deep dive into the evolution of AI, its current capabilities, and how it's transforming industries worldwide.",
+      link: "/blog/ai-evolution",
+    },
+    {
+      id: 5,
+      title: "AI Automation Tools for Developers",
+      description:
+        "Discover the top AI-powered automation tools that can boost productivity, automate workflows, and enhance software development.",
+      link: "/blog/ai-automation-tools",
+    },
+  ]);
+  const navigate = useNavigate();
 
   return (
-    <div className="blog-page">
-      <div className="container">
-        <h1>Blog</h1>
-        <div className="blog-grid">
-          {displayPosts.map(post => (
-            <article key={post.id} className="blog-card">
-              <div className="blog-image">
-                <img src={post.image} alt={post.title} />
-              </div>
-              <div className="blog-content">
-                <span className="blog-category">{post.category}</span>
-                <h2>{post.title}</h2>
-                <p>{post.excerpt}</p>
-                <div className="blog-meta">
-                  <span className="author">By {post.author}</span>
-                  <span className="date">{post.date}</span>
-                </div>
-                <Link to={`/blog/${post.id}`} className="btn btn-secondary">
-                  Read More
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+    <div className="min-h-screen bg-black py-10">
+      <div className="flex justify-between items-center max-w-5xl mx-auto px-8 mb-8">
+        <h1 className="text-3xl font-bold text-white">Blog</h1>
+        <button
+          onClick={() => navigate("/blog/upload")}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        >
+          Upload Blog
+        </button>
       </div>
+      <BlogCardHoverEffect blogs={blogs} />
     </div>
   );
-};
-
-export default BlogPage; 
+} 

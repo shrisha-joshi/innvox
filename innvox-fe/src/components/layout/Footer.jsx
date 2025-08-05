@@ -47,7 +47,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start space-x-3">
                 <i className="fas fa-map-marker-alt text-gray-400 mt-1"></i>
-                <span className="text-gray-400">INNVOX Club , KSIT<br />Bengaluru</span>
+                <span className="text-gray-400">INNVOX Technical Club <br />Bengaluru</span>
               </li>
               <li className="flex items-center space-x-3">
                 <i className="fas fa-phone text-gray-400"></i>
@@ -55,7 +55,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center space-x-3">
                 <i className="fas fa-envelope text-gray-400"></i>
-                <a href="mailto:info@techclub.com" className="text-gray-400 hover:text-white transition-colors">innvox_ksit@gmail.com</a>
+                <a href="mailto:info@techclub.com" className="text-gray-400 hover:text-white transition-colors">innvox@gmail.com</a>
               </li>
             </ul>
           </div>

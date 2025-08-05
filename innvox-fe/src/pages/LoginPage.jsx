@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { FcGoogle } from 'react-icons/fc';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -9,100 +12,122 @@ const LoginPage = () => {
   const [fullName, setFullName] = useState('');
   const [collegeEmail, setCollegeEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loginWithGoogle } = useAuth();
+  const { login } = useAuth();
   const { showNotification } = useNotification();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you would typically make an API call to authenticate
-    // For now, we'll just simulate a successful login
-    console.log('Attempting manual login with:', { email, password });
-    // try {
-    //   const userData = await loginApi({ email, password });
-    //   login(userData);
-    //   showNotification('Successfully logged in!', 'success');
-    //   navigate('/');
-    // } catch (error) {
-    //   showNotification('Login failed. Please check your credentials.', 'error');
-    // }
+    
+    if (!collegeEmail.endsWith('@gmail.com')) {
+      showNotification('Please use a valid Gmail address.', 'error');
+      return;
+    }
 
-    // Simulate success for now
- if (collegeEmail.endsWith('.edu.in') && password) {
-      // Replace with actual login logic using USN, fullName, collegeEmail, and password
- login({ email: collegeEmail, name: fullName }); // Use collegeEmail and fullName for demo user
+    if (!password) {
+      showNotification('Please enter your password.', 'error');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: collegeEmail,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      login({ email: data.email, name: data.name });
+      showNotification('Successfully logged in!', 'success');
       navigate('/');
-    } else {
- showNotification('Please enter email and password.', 'error');
+    } catch (error) {
+      showNotification(error.message || 'Login failed. Please check your credentials.', 'error');
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="container" style={{ color: 'black' }}>
-        <div className="auth-form-container">
-          <h1>Login</h1>
-          <form onSubmit={handleSubmit} className="auth-form">
-            <div className="form-group">
+    <div className="min-h-screen flex items-center justify-center bg-black p-6">
+      <div className="w-full max-w-md bg-black border border-gray-700 shadow-2xl rounded-xl p-8 space-y-6 transition-all duration-300">
+        <h1 className="text-2xl font-bold text-center text-white">Login</h1>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* <div>
+            <Label htmlFor="usn">USN</Label>
+            <Input
+              type="text"
+              id="usn"
+              value={usn}
+              onChange={(e) => setUsn(e.target.value)}
+              required
+            />
+          </div>
 
- <label htmlFor="usn" className="form-label">USN</label>
-              <input
- id="usn"
- value={usn}
- onChange={(e) => setUsn(e.target.value)}
-                required
-              />
-            </div>
+          <div>
+            <Label htmlFor="fullName">Full Name</Label>
+            <Input
+              type="text"
+              id="fullName"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+          </div> */}
 
-            <div className="form-group">
+                     <div>
+             <Label htmlFor="collegeEmail">Gmail Address</Label>
+             <Input
+               type="email"
+               id="collegeEmail"
+               value={collegeEmail}
+               onChange={(e) => setCollegeEmail(e.target.value)}
+               placeholder="yourname@gmail.com"
+               required
+             />
+             <p className="text-sm text-gray-400 mt-1">Please use your Gmail address</p>
+           </div>
 
- <label htmlFor="fullName" className="form-label">Full Name</label>
-              <input
- id="fullName"
- value={fullName}
- onChange={(e) => setFullName(e.target.value)}
- required
-              />
-            </div>
+          <div>
+            <Label htmlFor="password">Password</Label>
+            <Input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
+          >
+            Login
+          </button>
+        </form>
 
-            <div className="form-group">
-
- <label htmlFor="collegeEmail" className="form-label">College Gmail ID</label>
-              <input
- type="email"
- id="collegeEmail"
- value={collegeEmail}
- onChange={(e) => setCollegeEmail(e.target.value)}
- required
- />
- <p className="form-text text-muted">College Gmail ID has to be given</p>
-            </div>
-
-            {/* Add password field for consistency, although Google login is separate */}
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-
-            </div>
-            <button type="submit" className="btn btn-primary">
-              Login
-            </button>
-            <div className="divider">OR</div>
-
-            <button type="button" onClick={loginWithGoogle} className="btn btn-google">
-              Login with Google
-            </button>
-          </form>
-          <p className="auth-link">
-            Don't have an account? <Link to="/register">Register</Link>
-          </p>
+        <div className="text-center text-sm text-gray-400">
+          OR
         </div>
+
+                 <button 
+           type="button" 
+           onClick={() => window.location.href = '/api/auth/google'}
+           className="w-full flex items-center justify-center gap-2 border border-gray-600 py-2 px-4 rounded-lg hover:bg-gray-800 transition duration-300 text-white"
+         >
+           <FcGoogle size={20} />
+           <span>Login with Google</span>
+         </button>
+
+        <p className="text-center text-sm text-gray-400">
+          Don't have an account? <Link to="/register" className="text-blue-400 hover:underline">Register</Link>
+        </p>
       </div>
     </div>
   );

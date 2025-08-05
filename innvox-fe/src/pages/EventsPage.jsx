@@ -1,87 +1,123 @@
-import React from 'react';
+import React, { useState } from "react";
 
-const EventsPage = () => {
+const events = [
+  {
+    title: "AI Hackathon 2024",
+    date: "August 15, 2024",
+    description:
+      "Join the ultimate AI Hackathon! Collaborate, innovate, and build cutting-edge AI solutions in 24 hours. Prizes for the top teams!",
+    image:
+      "https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80",
+    details:
+      "This 24-hour hackathon brings together AI enthusiasts, developers, and students to solve real-world problems using artificial intelligence. Network with industry leaders, attend workshops, and compete for amazing prizes!",
+  },
+  {
+    title: "Workshop: AI in the Real World",
+    date: "September 10, 2024",
+    description:
+      "A hands-on workshop exploring practical applications of AI. Learn from industry experts and get started with real-world AI projects.",
+    image:
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80",
+    details:
+      "This workshop covers the fundamentals of AI, including machine learning, data science, and deployment. Participants will work on mini-projects and receive certificates of completion.",
+  },
+];
+
+export default function EventsPage() {
+  const [selected, setSelected] = useState(null);
+  const [showRegister, setShowRegister] = useState(false);
+
   return (
-    <div className="min-h-screen bg-slate-950 py-20">
-      <div className="container mx-auto px-4">
-        <h1 className="text-4xl font-bold text-white mb-8 font-[system-ui] tracking-tight">Upcoming Events</h1>
-        
-        {/* Event Card */}
-        <div className="bg-gray-950 rounded-lg overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.1)] max-w-2xl mx-auto 
-            transform transition duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] 
-            relative group border border-white/10">
-          {/* Glow effect container */}
-          <div className="absolute inset-0 rounded-lg glow-effect opacity-20 group-hover:opacity-30 transition-opacity"></div>
-          
-          {/* Card Header with Gradient */}
-          <div className="bg-black border-b border-slate-800 px-6 py-4 relative z-10 
-              shadow-[inset_0_1px_8px_rgba(255,255,255,0.05)]">
-            <h2 className="text-2xl font-bold text-white font-[system-ui] tracking-tight">Inaugural of INNVOX Club</h2>
+    <div className="min-h-screen bg-black py-10">
+      <h1 className="text-3xl font-bold text-white text-center mb-10">Upcoming Events</h1>
+      <div className="max-w-4xl mx-auto grid gap-8 grid-cols-1 md:grid-cols-2">
+        {events.map((event, idx) => (
+          <div
+            key={idx}
+            className="bg-neutral-900 border border-gray-700 rounded-xl shadow-lg overflow-hidden flex flex-col hover:scale-105 transition-transform duration-200"
+          >
+            <img
+              src={event.image}
+              alt={event.title}
+              className="w-full h-56 object-cover object-center"
+            />
+            <div className="p-6 flex flex-col flex-1">
+              <h2 className="text-xl font-bold text-white mb-2">{event.title}</h2>
+              <p className="text-blue-400 font-semibold mb-2">{event.date}</p>
+              <p className="text-gray-300 mb-4 flex-1">{event.description}</p>
+              <div className="flex gap-2 mt-auto">
+                <button
+                  onClick={() => setSelected(event)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                >
+                  See Details
+                </button>
+                <button
+                  onClick={() => setShowRegister(true)}
+                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+                >
+                  Register
+                </button>
+              </div>
+            </div>
           </div>
-          
-          {/* Card Content */}
-          <div className="p-6 text-gray-400 font-[system-ui] relative z-10">
-            <div className="flex flex-col md:flex-row mb-6">
-              {/* Date */}
-              <div className="flex items-center mb-3 md:mb-0 md:mr-8">
-                <svg className="w-5 h-5 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                <span>21st April 2025</span>
-              </div>
-              
-              {/* Time */}
-              <div className="flex items-center mb-3 md:mb-0 md:mr-8">
-                <svg className="w-5 h-5 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <span>10:00 AM</span>
-              </div>
-              
-              {/* Location */}
-              <div className="flex items-center">
-                <svg className="w-5 h-5 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-                <span>KSIT Auditorium</span>
-              </div>
-            </div>
-            
-            <div className="border-t border-gray-700/50 pt-4">
-              <p className="mb-4 leading-relaxed">
-                Join us for the official launch of INNVOX, the premier tech innovation club designed to foster creativity and technical excellence among students.
-                Experience demonstrations of cutting-edge projects, networking opportunities, and learn about upcoming workshops and hackathons.
-              </p>
-              
-              <button className="inline-flex items-center justify-center rounded-md text-md  
-                bg-white text-black h-10 px-4 py-2 transition-all duration-300 
-                hover:shadow-[0_0_20px_rgba(255,255,255,0.8)] relative overflow-hidden
-                before:absolute before:inset-0 before:bg-white/10 before:opacity-0 hover:before:opacity-100
-                before:transition-opacity before:duration-300">
-                <span className="relative z-10">Register Now</span>
-              </button>
-            </div>
+        ))}
+      </div>
+      {/* Event Details Modal */}
+      {selected && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-neutral-900 rounded-xl p-8 max-w-lg w-full relative">
+            <button
+              onClick={() => setSelected(null)}
+              className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-2xl font-bold"
+            >
+              &times;
+            </button>
+            <img
+              src={selected.image}
+              alt={selected.title}
+              className="w-full h-48 object-cover rounded mb-4"
+            />
+            <h2 className="text-2xl font-bold mb-2 text-black dark:text-white">{selected.title}</h2>
+            <p className="text-blue-400 font-semibold mb-2">{selected.date}</p>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">{selected.details}</p>
           </div>
         </div>
-      </div>
-      
-      <style jsx>{`
-        .glow-effect {
-          background: radial-gradient(800px circle at var(--x) var(--y), 
-            rgba(255,255,255,0.15) 0%, 
-            rgba(255,255,255,0) 80%);
-          pointer-events: none;
-        }
-        
-        .group:hover .glow-effect {
-          background: radial-gradient(600px circle at var(--x) var(--y), 
-            rgba(255,255,255,0.2) 0%, 
-            rgba(255,255,255,0) 80%;
-        }
-      `}</style>
+      )}
+      {/* Register Modal */}
+      {showRegister && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-neutral-900 rounded-xl p-8 max-w-md w-full relative">
+            <button
+              onClick={() => setShowRegister(false)}
+              className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-2xl font-bold"
+            >
+              &times;
+            </button>
+            <h2 className="text-2xl font-bold mb-4 text-black dark:text-white">Register for Event</h2>
+            <form className="space-y-4">
+              <input
+                type="text"
+                placeholder="Your Name"
+                className="w-full px-3 py-2 rounded bg-gray-200 dark:bg-gray-800 text-black dark:text-white border border-gray-400 dark:border-gray-700"
+                required
+              />
+              <input
+                type="email"
+                placeholder="Your Email"
+                className="w-full px-3 py-2 rounded bg-gray-200 dark:bg-gray-800 text-black dark:text-white border border-gray-400 dark:border-gray-700"
+                required
+              />
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+              >
+                Submit
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default EventsPage;
+}
