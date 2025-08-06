@@ -1,24 +1,48 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNotification } from '../context/NotificationContext';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Label } from '../components/ui/label';
+import { Input } from '../components/ui/input';
 
 const ProfilePage = () => {
-  const { user, login } = useAuth();
-  const { showNotification } = useNotification();
+  const { user, updateProfile, changePassword } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [profileData, setProfileData] = useState({
     name: user?.name || '',
-    email: user?.email || '',
+    email: user?.email || ''
+  });
+
+  const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
   });
 
-  const handleChange = (e) => {
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white mb-4">Please log in to view your profile</h2>
+          <p className="text-gray-400">You need to be authenticated to access this page.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleProfileChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setProfileData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -26,213 +50,204 @@ const ProfilePage = () => {
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
-    
-    if (!formData.name.trim()) {
-      showNotification('Name cannot be empty.', 'error');
-      return;
-    }
+    setMessage('');
+    setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/update-profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Profile update failed');
+      const result = await updateProfile(profileData.name, profileData.email);
+      
+      if (result.success) {
+        setMessage('Profile updated successfully!');
+        setIsEditing(false);
+      } else {
+        setMessage(result.message);
       }
-
-      login({ email: data.email, name: data.name });
-      showNotification('Profile updated successfully!', 'success');
-      setIsEditing(false);
     } catch (error) {
-      showNotification(error.message || 'Profile update failed. Please try again.', 'error');
+      setMessage('Failed to update profile. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    
-    if (formData.newPassword !== formData.confirmPassword) {
-      showNotification('New passwords do not match!', 'error');
+    setMessage('');
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setMessage('New passwords do not match');
       return;
     }
 
-    if (formData.newPassword.length < 6) {
-      showNotification('New password must be at least 6 characters long.', 'error');
+    if (passwordData.newPassword.length < 6) {
+      setMessage('New password must be at least 6 characters');
       return;
     }
 
+    setIsLoading(true);
     try {
-      const response = await fetch('/api/auth/change-password', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentPassword: formData.currentPassword,
-          newPassword: formData.newPassword,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Password change failed');
+      const result = await changePassword(passwordData.currentPassword, passwordData.newPassword);
+      
+      if (result.success) {
+        setMessage('Password changed successfully!');
+        setIsChangingPassword(false);
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+      } else {
+        setMessage(result.message);
       }
-
-      showNotification('Password changed successfully!', 'success');
-      setFormData(prev => ({
-        ...prev,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      }));
     } catch (error) {
-      showNotification(error.message || 'Password change failed. Please try again.', 'error');
+      setMessage('Failed to change password. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black p-6">
-        <div className="w-full max-w-md bg-black border border-gray-700 shadow-2xl rounded-xl p-8 space-y-6">
-          <h1 className="text-2xl font-bold text-center text-white">Access Denied</h1>
-          <p className="text-center text-gray-400">Please log in to view your profile.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-black p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-black border border-gray-700 shadow-2xl rounded-xl p-8 space-y-8">
-          <div className="flex items-center space-x-4">
-            <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-              {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+    <div className="min-h-screen bg-black py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-black border border-gray-700 rounded-lg p-8">
+          <div className="text-center mb-8">
+            <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl font-bold text-white">
+                {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+              </span>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-white">{user.name || 'User'}</h1>
-              <p className="text-gray-400">{user.email}</p>
-            </div>
+            <h1 className="text-3xl font-bold text-white">{user.name}</h1>
+            <p className="text-gray-400">{user.email}</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Profile Information */}
-            <div className="space-y-6">
+          {message && (
+            <div className={`mb-6 p-4 rounded ${message.includes('successfully') ? 'bg-green-900 text-green-200' : 'bg-red-900 text-red-200'}`}>
+              {message}
+            </div>
+          )}
+
+          {/* Profile Information */}
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-white">Profile Information</h2>
-              
-              {!isEditing ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-gray-400">Name</Label>
-                    <p className="text-white text-lg">{user.name || 'Not set'}</p>
-                  </div>
-                  <div>
-                    <Label className="text-gray-400">Email</Label>
-                    <p className="text-white text-lg">{user.email}</p>
-                  </div>
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
-                  >
-                    Edit Profile
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleUpdateProfile} className="space-y-4">
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="flex space-x-3">
-                    <button
-                      type="submit"
-                      className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300"
-                    >
-                      Save Changes
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(false)}
-                      className="bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="text-blue-400 hover:text-blue-300"
+              >
+                {isEditing ? 'Cancel' : 'Edit Profile'}
+              </button>
             </div>
 
-            {/* Change Password */}
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-white">Change Password</h2>
-              
-              <form onSubmit={handleChangePassword} className="space-y-4">
+            {isEditing ? (
+              <form onSubmit={handleUpdateProfile} className="space-y-4">
                 <div>
-                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Label htmlFor="name" className="text-white">Name</Label>
                   <Input
-                    type="password"
-                    id="currentPassword"
-                    name="currentPassword"
-                    value={formData.currentPassword}
-                    onChange={handleChange}
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={profileData.name}
+                    onChange={handleProfileChange}
+                    className="mt-1"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="newPassword">New Password</Label>
+                  <Label htmlFor="email" className="text-white">Email</Label>
                   <Input
-                    type="password"
-                    id="newPassword"
-                    name="newPassword"
-                    value={formData.newPassword}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={profileData.email}
+                    onChange={handleProfileChange}
+                    className="mt-1"
                     required
                   />
                 </div>
                 <button
                   type="submit"
-                  className="bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300"
+                  disabled={isLoading}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
-                  Change Password
+                  {isLoading ? 'Updating...' : 'Update Profile'}
                 </button>
               </form>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <span className="text-gray-400">Name:</span>
+                  <p className="text-white">{user.name}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Email:</span>
+                  <p className="text-white">{user.email}</p>
+                </div>
+                <div>
+                  <span className="text-gray-400">Role:</span>
+                  <p className="text-white capitalize">{user.role}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Change Password */}
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-white">Change Password</h2>
+              <button
+                onClick={() => setIsChangingPassword(!isChangingPassword)}
+                className="text-blue-400 hover:text-blue-300"
+              >
+                {isChangingPassword ? 'Cancel' : 'Change Password'}
+              </button>
             </div>
+
+            {isChangingPassword && (
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div>
+                  <Label htmlFor="currentPassword" className="text-white">Current Password</Label>
+                  <Input
+                    id="currentPassword"
+                    name="currentPassword"
+                    type="password"
+                    value={passwordData.currentPassword}
+                    onChange={handlePasswordChange}
+                    className="mt-1"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newPassword" className="text-white">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    name="newPassword"
+                    type="password"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    className="mt-1"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword" className="text-white">Confirm New Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    className="mt-1"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {isLoading ? 'Changing...' : 'Change Password'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>

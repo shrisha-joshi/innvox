@@ -1,81 +1,106 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const AdminLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigation = [
-    { name: 'Dashboard', path: '/' },
-    { name: 'Notifications', path: '/notifications' },
-    { name: 'Events', path: '/events' },
-    { name: 'Gallery', path: '/gallery' },
-    { name: 'Resources', path: '/resources' },
-    { name: 'Blog', path: '/blog' },
-    { name: 'Members', path: '/members' },
+    { name: 'Dashboard', href: '/', icon: '📊' },
+    { name: 'Blogs', href: '/blogs', icon: '📝' },
+    { name: 'Events', href: '/events', icon: '🎉' },
+    { name: 'Team', href: '/team', icon: '👥' },
+    { name: 'Users', href: '/users', icon: '👤' },
+    { name: 'Gallery', href: '/gallery', icon: '🖼️' },
+    { name: 'Testimonials', href: '/testimonials', icon: '💬' },
   ];
 
   const handleLogout = () => {
     logout();
+    navigate('/login');
   };
 
   return (
-    <div className="flex h-screen bg-gray-900">
+    <div className="min-h-screen bg-gray-900">
       {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-gray-800 text-white transition-all duration-300 ease-in-out`}>
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            <h1 className={`text-xl font-bold ${!isSidebarOpen && 'hidden'}`}>Admin Panel</h1>
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-lg hover:bg-gray-700"
-            >
-              {isSidebarOpen ? '←' : '→'}
-            </button>
-          </div>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-700">
+          <h1 className="text-xl font-bold text-white">Innvox Admin</h1>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden text-gray-400 hover:text-white"
+          >
+            ✕
+          </button>
         </div>
-        <nav className="mt-8">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.path}
-              className={`flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 ${
-                location.pathname === item.path ? 'bg-gray-700' : ''
-              }`}
-            >
-              <span className={`${!isSidebarOpen && 'hidden'}`}>{item.name}</span>
-            </Link>
-          ))}
+        
+        <nav className="mt-6 px-3">
+          <div className="space-y-1">
+            {navigation.map((item) => {
+              const isActive = location.pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={`group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    isActive
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  }`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <span className="mr-3">{item.icon}</span>
+                  {item.name}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Main content */}
+      <div className="lg:pl-64">
         {/* Header */}
-        <header className="bg-gray-800 shadow-lg">
-          <div className="flex items-center justify-between px-6 py-4">
-            <h2 className="text-xl font-semibold text-white">
-              {navigation.find(item => item.path === location.pathname)?.name || 'Dashboard'}
-            </h2>
+        <div className="sticky top-0 z-40 bg-gray-800 border-b border-gray-700">
+          <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden text-gray-400 hover:text-white"
+            >
+              ☰
+            </button>
+            
             <div className="flex items-center space-x-4">
-              <span className="text-gray-300">{user?.email}</span>
+              <div className="text-right">
+                <p className="text-sm font-medium text-white">{user?.name}</p>
+                <p className="text-xs text-gray-400">{user?.email}</p>
+              </div>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
               >
                 Logout
               </button>
             </div>
           </div>
-        </header>
+        </div>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-6">
+        {/* Page content */}
+        <main className="flex-1">
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 };
